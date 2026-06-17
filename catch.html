@@ -72,6 +72,30 @@
     pointer-events: auto;
   }
   .btn:active { transform: scale(0.96); }
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .btn-secondary {
+    background: rgba(255,255,255,0.9);
+    color: #5a3a2a;
+    border: 2px solid rgba(216, 82, 122, 0.3);
+    padding: 14px 24px;
+    font-size: clamp(14px, 3.5vw, 17px);
+    font-weight: 700;
+    border-radius: 100px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    cursor: pointer;
+    text-shadow: none;
+    transition: transform 0.1s;
+    pointer-events: auto;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-secondary:active { transform: scale(0.96); }
   .score-display {
     position: absolute;
     top: 24px; left: 50%;
@@ -211,7 +235,10 @@
         Total: <span id="totalPointsEnd" style="font-weight: 700;">0</span> pts
       </div>
     </div>
-    <button class="btn" id="retryBtn">もう一回</button>
+    <div class="btn-row">
+      <a class="btn-secondary" href="index.html">🏠 ホーム</a>
+      <button class="btn" id="retryBtn">もう一回</button>
+    </div>
   </div>
 </div>
 

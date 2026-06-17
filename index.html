@@ -218,7 +218,7 @@
   <div class="games-section-label">🎮 Mini Games</div>
   <div class="games">
     <a class="game-tile" href="jump.html">
-      <div class="game-icon">🦘</div>
+      <div class="game-icon">🐦</div>
       <div class="game-info">
         <div class="game-name">$KIBSHI JUMP</div>
         <div class="game-desc">Flappy-style. Tap to jump over pipes.</div>
@@ -226,7 +226,7 @@
       </div>
     </a>
     <a class="game-tile" href="catch.html">
-      <div class="game-icon">🪙</div>
+      <div class="game-icon">💣</div>
       <div class="game-info">
         <div class="game-name">$KIBSHI CATCH</div>
         <div class="game-desc">Catch falling coins & bones, dodge bombs.</div>
@@ -245,45 +245,45 @@
 
   <div class="rewards-section">
     <div class="games-section-label">🏆 Reward Milestones</div>
-    <div class="reward-tile" id="reward-100">
+    <div class="reward-tile" id="reward-2000">
       <div class="reward-left">
         <div class="reward-medal">🥉</div>
         <div>
           <div class="reward-name">Bronze KIBSHI Badge</div>
-          <div class="reward-req">Reach 100 points</div>
+          <div class="reward-req">Reach 2,000 points</div>
         </div>
       </div>
-      <div class="reward-status">0 / 100</div>
+      <div class="reward-status">0 / 2,000</div>
     </div>
-    <div class="reward-tile" id="reward-500">
+    <div class="reward-tile" id="reward-10000">
       <div class="reward-left">
         <div class="reward-medal">🥈</div>
         <div>
           <div class="reward-name">Silver KIBSHI Badge</div>
-          <div class="reward-req">Reach 500 points</div>
+          <div class="reward-req">Reach 10,000 points</div>
         </div>
       </div>
-      <div class="reward-status">0 / 500</div>
+      <div class="reward-status">0 / 10,000</div>
     </div>
-    <div class="reward-tile" id="reward-1000">
+    <div class="reward-tile" id="reward-50000">
       <div class="reward-left">
         <div class="reward-medal">🥇</div>
         <div>
           <div class="reward-name">Gold KIBSHI Badge</div>
-          <div class="reward-req">Reach 1,000 points</div>
+          <div class="reward-req">Reach 50,000 points</div>
         </div>
       </div>
-      <div class="reward-status">0 / 1000</div>
+      <div class="reward-status">0 / 50,000</div>
     </div>
-    <div class="reward-tile" id="reward-5000">
+    <div class="reward-tile" id="reward-250000">
       <div class="reward-left">
         <div class="reward-medal">💎</div>
         <div>
           <div class="reward-name">Diamond KIBSHI Badge</div>
-          <div class="reward-req">Reach 5,000 points</div>
+          <div class="reward-req">Reach 250,000 points</div>
         </div>
       </div>
-      <div class="reward-status">0 / 5000</div>
+      <div class="reward-status">0 / 250,000</div>
     </div>
   </div>
 
@@ -339,10 +339,10 @@ async function loadStats() {
 
   // Reward milestones
   const tiers = [
-    { id: 'reward-100', req: 100 },
-    { id: 'reward-500', req: 500 },
-    { id: 'reward-1000', req: 1000 },
-    { id: 'reward-5000', req: 5000 },
+    { id: 'reward-2000', req: 2000 },
+    { id: 'reward-10000', req: 10000 },
+    { id: 'reward-50000', req: 50000 },
+    { id: 'reward-250000', req: 250000 },
   ];
   for (const tier of tiers) {
     const tile = document.getElementById(tier.id);
