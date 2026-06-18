@@ -323,6 +323,7 @@ let winStreak = 0;
 let totalWins = 0;
 let botLevel = 1;
 let totalPoints = 0;
+let bestMatchScore = 0;
 let lastRoundResult = ''; // 'win' / 'lose' / 'foul'
 
 // Round timing
@@ -362,6 +363,10 @@ async function loadInitialState() {
     if (t) totalPoints = parseInt(t) || 0;
   } catch (e) {}
   try {
+    const bs = await storage.get('kibshi_duel_best_score');
+    if (bs) bestMatchScore = parseInt(bs) || 0;
+  } catch (e) {}
+  try {
     const m = await storage.get('kibshi_jump_muted');
     if (m === '1') muted = true;
   } catch (e) {}
@@ -375,6 +380,7 @@ async function saveProgress() {
     await storage.set('kibshi_duel_wins', String(totalWins));
     await storage.set('kibshi_duel_streak', String(winStreak));
     await storage.set('kibshi_total_points', String(totalPoints));
+    await storage.set('kibshi_duel_best_score', String(bestMatchScore));
   } catch (e) {}
 }
 
@@ -452,16 +458,41 @@ function drawKibshiHero(x, y) {
   ctx.beginPath();
   ctx.ellipse(0, s * 1.5, s * 0.8, 5, 0, 0, Math.PI * 2);
   ctx.fill();
+
+  // Tail (curled shiba-style, left side - drawn before body so body overlaps inner edge)
+  ctx.fillStyle = '#D89A5F';
+  ctx.beginPath();
+  ctx.arc(-s * 0.50, s * 0.95, s * 0.16, 0, Math.PI * 2);
+  ctx.fill();
+  // Tail cream tip
+  ctx.fillStyle = '#F0C99A';
+  ctx.beginPath();
+  ctx.arc(-s * 0.55, s * 0.89, s * 0.07, 0, Math.PI * 2);
+  ctx.fill();
   
   // Body
   ctx.fillStyle = '#E2A66E';
   ctx.beginPath();
   ctx.ellipse(0, s * 0.85, s * 0.55, s * 0.45, 0, 0, Math.PI * 2);
   ctx.fill();
+  // Body shading (subtle depth)
+  ctx.fillStyle = 'rgba(170, 100, 50, 0.15)';
+  ctx.beginPath();
+  ctx.ellipse(0, s * 1.05, s * 0.45, s * 0.22, 0, 0, Math.PI * 2);
+  ctx.fill();
   // Belly
   ctx.fillStyle = '#FBE8D0';
   ctx.beginPath();
   ctx.ellipse(0, s * 0.95, s * 0.28, s * 0.32, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Front paws (planted, cream)
+  ctx.fillStyle = '#FBE8D0';
+  ctx.beginPath();
+  ctx.ellipse(-s * 0.24, s * 1.27, s * 0.13, s * 0.09, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(s * 0.24, s * 1.27, s * 0.13, s * 0.09, 0, 0, Math.PI * 2);
   ctx.fill();
   
   // Head image
@@ -1280,6 +1311,7 @@ async function matchOver() {
     winStreak = 0;
   }
   
+  if (matchScore > bestMatchScore) bestMatchScore = matchScore;
   totalPoints += matchScore;
   await saveProgress();
   updateTotalDisplay();

@@ -238,7 +238,7 @@
       <div class="game-info">
         <div class="game-name">$KIBSHI DUEL</div>
         <div class="game-desc">Quick draw laser shootout. Best of 3.</div>
-        <div class="game-best">Best: <span id="duelBest">-</span></div>
+        <div class="game-best">Best: <span id="duelBest">0</span></div>
       </div>
     </a>
   </div>
@@ -321,7 +321,7 @@ async function loadStats() {
   const total = parseInt(await storage.get('kibshi_total_points') || '0') || 0;
   const jumpBest = parseInt(await storage.get('kibshi_jump_best') || '0') || 0;
   const catchBest = parseInt(await storage.get('kibshi_catch_best') || '0') || 0;
-  const duelBest = await storage.get('kibshi_duel_best');
+  const duelBest = parseInt(await storage.get('kibshi_duel_best_score') || '0') || 0;
 
   // Animate the total value counting up
   const el = document.getElementById('totalValue');
@@ -337,7 +337,7 @@ async function loadStats() {
 
   document.getElementById('jumpBest').textContent = jumpBest;
   document.getElementById('catchBest').textContent = catchBest;
-  document.getElementById('duelBest').textContent = duelBest ? duelBest + 'ms' : '-';
+  document.getElementById('duelBest').textContent = duelBest;
 
   // Reward milestones
   const tiers = [
