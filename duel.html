@@ -1230,8 +1230,8 @@ function determineWinner() {
     if (lastReactionTime < bestReactionTime) bestReactionTime = lastReactionTime;
     
     // Round score: base + level bonus + speed bonus
-    const baseScore = 10;
-    const levelBonus = (botLevel - 1) * 2;
+    const baseScore = 6;
+    const levelBonus = (botLevel - 1) * 1;
     let speedBonus = 0;
     if (playerTime < 200) speedBonus = 10;
     else if (playerTime < 300) speedBonus = 5;
@@ -1293,18 +1293,18 @@ async function matchOver() {
   let streakMessage = '';
   
   if (isWin) {
-    const matchWinBonus = 5 + (botLevel - 1) * 2;
+    const matchWinBonus = 3 + (botLevel - 1) * 1;
     let bonus = matchWinBonus;
     if (botWins === 0) {
-      bonus += 5; // sweep
+      bonus += 3; // sweep
       titleText = 'PERFECT VICTORY!';
     }
     matchScore += bonus;
     totalWins++;
     winStreak++;
-    if (winStreak === 5) { matchScore += 20; streakMessage = '5 WIN STREAK! +20'; }
-    else if (winStreak === 10) { matchScore += 50; streakMessage = '🔥 10 WIN STREAK! +50'; }
-    else if (winStreak >= 15 && winStreak % 5 === 0) { matchScore += 50; streakMessage = `🔥🔥 ${winStreak} STREAK! +50`; }
+    if (winStreak === 5) { matchScore += 15; streakMessage = '5 WIN STREAK! +15'; }
+    else if (winStreak === 10) { matchScore += 30; streakMessage = '🔥 10 WIN STREAK! +30'; }
+    else if (winStreak >= 15 && winStreak % 5 === 0) { matchScore += 30; streakMessage = `🔥🔥 ${winStreak} STREAK! +30`; }
     else if (winStreak > 1) streakMessage = `${winStreak} win streak!`;
     botLevel = Math.min(10, Math.floor(totalWins / 3) + 1);
   } else {
@@ -1329,7 +1329,7 @@ async function matchOver() {
     const label = reactionLabel(lastReactionTime);
     let extras = '';
     if (isWin) {
-      const levelBonusTotal = (botLevel - 1) * 2 * 2 + (botLevel - 1) * 2;  // round level bonus x2 + match win level bonus
+      const levelBonusTotal = (botLevel - 1) * 3;  // round level bonus x2 + match win level bonus = (Lv-1)*1 * 3
       if (levelBonusTotal > 0) {
         extras = `<br><span style="color:#FFB6E5; font-size:12px;">vs Lv ${botLevel} ${getBanditRank()} → +${levelBonusTotal} bonus</span>`;
       }

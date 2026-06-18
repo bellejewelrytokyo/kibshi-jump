@@ -493,15 +493,15 @@ function drawShibaImage(x, y, rotation, scale = 1) {
   ctx.fill();
 
   // --- Body (drawn before head so head overlaps on top) ---
-  // Tail (curled shiba-style, left side)
+  // Tail (curled shiba-style, left side, raised)
   ctx.fillStyle = '#D89A5F';
   ctx.beginPath();
-  ctx.arc(-s * 0.80, s * 1.25, s * 0.24, 0, Math.PI * 2);
+  ctx.arc(-s * 0.80, s * 1.05, s * 0.24, 0, Math.PI * 2);
   ctx.fill();
   // Tail tip lighter
   ctx.fillStyle = '#F0C99A';
   ctx.beginPath();
-  ctx.arc(-s * 0.87, s * 1.17, s * 0.11, 0, Math.PI * 2);
+  ctx.arc(-s * 0.87, s * 0.97, s * 0.11, 0, Math.PI * 2);
   ctx.fill();
 
   // Main body (rounded tan shape)
