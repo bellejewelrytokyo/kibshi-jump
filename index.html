@@ -233,14 +233,14 @@
         <div class="game-best">Best: <span id="catchBest">0</span></div>
       </div>
     </a>
-    <div class="game-tile locked">
-      <div class="game-icon">🏃</div>
+    <a class="game-tile" href="duel.html">
+      <div class="game-icon">🔫</div>
       <div class="game-info">
-        <div class="game-name">$KIBSHI RUN</div>
-        <div class="game-desc">Endless runner. Jump and slide.</div>
+        <div class="game-name">$KIBSHI DUEL</div>
+        <div class="game-desc">Quick draw laser shootout. Best of 3.</div>
+        <div class="game-best">Best: <span id="duelBest">-</span></div>
       </div>
-      <div class="locked-badge">SOON</div>
-    </div>
+    </a>
   </div>
 
   <div class="rewards-section">
@@ -321,6 +321,7 @@ async function loadStats() {
   const total = parseInt(await storage.get('kibshi_total_points') || '0') || 0;
   const jumpBest = parseInt(await storage.get('kibshi_jump_best') || '0') || 0;
   const catchBest = parseInt(await storage.get('kibshi_catch_best') || '0') || 0;
+  const duelBest = await storage.get('kibshi_duel_best');
 
   // Animate the total value counting up
   const el = document.getElementById('totalValue');
@@ -336,6 +337,7 @@ async function loadStats() {
 
   document.getElementById('jumpBest').textContent = jumpBest;
   document.getElementById('catchBest').textContent = catchBest;
+  document.getElementById('duelBest').textContent = duelBest ? duelBest + 'ms' : '-';
 
   // Reward milestones
   const tiers = [
