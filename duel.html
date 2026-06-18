@@ -1270,13 +1270,13 @@ function determineWinner() {
     lastRoundResult = 'win';
     if (lastReactionTime < bestReactionTime) bestReactionTime = lastReactionTime;
     
-    // Round score: base + small level bonus + speed bonus
-    // (Level bonus mostly moved to match-win bonus to discourage farming losses)
-    const baseScore = 10;
+    // Round score: small base + small level bonus + small speed bonus
+    // (Main level reward is on match win to discourage farming losses)
+    const baseScore = 4;
     const levelBonus = (botLevel - 1) * 1;
     let speedBonus = 0;
-    if (playerTime < 200) speedBonus = 6;
-    else if (playerTime < 300) speedBonus = 3;
+    if (playerTime < 200) speedBonus = 4;
+    else if (playerTime < 300) speedBonus = 2;
     const roundScore = baseScore + levelBonus + speedBonus;
     matchScore += roundScore;
     lastRoundScore = roundScore;
@@ -1339,7 +1339,7 @@ async function matchOver() {
   const foughtRankName = getBanditRank();
   
   if (isWin) {
-    const matchWinBonus = 5 + (botLevel - 1) * 10;
+    const matchWinBonus = 5 + Math.floor((botLevel - 1) ** 2 * 1.5);
     let bonus = matchWinBonus;
     if (botWins === 0) {
       bonus += 5; // sweep
@@ -1348,9 +1348,9 @@ async function matchOver() {
     matchScore += bonus;
     totalWins++;
     winStreak++;
-    if (winStreak === 5) { matchScore += 20; streakMessage = '5 WIN STREAK! +20'; }
-    else if (winStreak === 10) { matchScore += 50; streakMessage = '🔥 10 WIN STREAK! +50'; }
-    else if (winStreak >= 15 && winStreak % 5 === 0) { matchScore += 50; streakMessage = `🔥🔥 ${winStreak} STREAK! +50`; }
+    if (winStreak === 5) { matchScore += 5; streakMessage = '🎯 5 WIN STREAK! +5'; }
+    else if (winStreak === 10) { matchScore += 15; streakMessage = '🔥 10 WIN STREAK! +15'; }
+    else if (winStreak >= 15 && winStreak % 5 === 0) { matchScore += 15; streakMessage = `🔥🔥 ${winStreak} STREAK! +15`; }
     else if (winStreak > 1) streakMessage = `${winStreak} win streak!`;
     botLevel = Math.min(10, Math.floor(totalWins / 3) + 1);
   } else {
@@ -1376,7 +1376,7 @@ async function matchOver() {
     let extras = '';
     if (isWin) {
       // Use the bot level we ACTUALLY fought (before any level-up from this win)
-      const levelBonusTotal = (foughtBotLevel - 1) * 12;  // (Lv-1)*1 * 2 rounds + (Lv-1)*10 match win
+      const levelBonusTotal = (foughtBotLevel - 1) * 2 + Math.floor((foughtBotLevel - 1) ** 2 * 1.5);  // (Lv-1)*1 * 2 rounds + quadratic match Lv
       if (levelBonusTotal > 0) {
         extras = `<br><span style="color:#FFB6E5; font-size:12px;">vs Lv ${foughtBotLevel} ${foughtRankName} → +${levelBonusTotal} bonus</span>`;
       }
