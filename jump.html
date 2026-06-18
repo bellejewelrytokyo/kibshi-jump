@@ -884,14 +884,14 @@ function spawnPipe() {
   // Maybe spawn a collectible between this pipe and the next one
   const roll = Math.random();
   const baseX = W + PIPE_SPACING / 2;
-  if (roll < 0.05) {
+  if (roll < 0.04) {
     // Bone (rare, worth +3)
     collectibles.push({
       x: baseX + (Math.random() - 0.5) * 40,
       y: gapY + (Math.random() - 0.5) * 80,
       type: 'bone', collected: false, rot: Math.random() * Math.PI, t: 0,
     });
-  } else if (roll < 0.10) {
+  } else if (roll < 0.08) {
     // Bone PAIR (super rare, worth +6 total!)
     const centerY = gapY + (Math.random() - 0.5) * 80;
     collectibles.push({
@@ -902,8 +902,21 @@ function spawnPipe() {
       x: baseX + 22, y: centerY + 8,
       type: 'bone', collected: false, rot: Math.random() * Math.PI, t: 2,
     });
-  } else if (roll < 0.25) {
-    // Coin QUAD (vertical row of 4 coins - bonanza!)
+  } else if (roll < 0.13) {
+    // Coin GRID 3x3 (MEGA BONANZA - 9 coins!)
+    const centerY = gapY;
+    const gridX = baseX;
+    for (let row = -1; row <= 1; row++) {
+      for (let col = -1; col <= 1; col++) {
+        collectibles.push({
+          x: gridX + col * 32,
+          y: centerY + row * 32,
+          type: 'coin', collected: false, rot: 0, t: (row + col + 2) * 2,
+        });
+      }
+    }
+  } else if (roll < 0.30) {
+    // Coin QUAD (vertical row of 4 coins)
     const centerY = gapY + (Math.random() - 0.5) * 40;
     const quadX = baseX + (Math.random() - 0.5) * 30;
     for (let i = 0; i < 4; i++) {
@@ -912,7 +925,7 @@ function spawnPipe() {
         type: 'coin', collected: false, rot: 0, t: i * 3,
       });
     }
-  } else if (roll < 0.50) {
+  } else if (roll < 0.55) {
     // Coin TRIO (vertical row of 3 coins)
     const centerY = gapY + (Math.random() - 0.5) * 60;
     const triX = baseX + (Math.random() - 0.5) * 30;
@@ -922,7 +935,7 @@ function spawnPipe() {
         type: 'coin', collected: false, rot: 0, t: i * 4,
       });
     }
-  } else if (roll < 0.80) {
+  } else if (roll < 0.85) {
     // Coin PAIR (2 coins horizontally)
     const centerY = gapY + (Math.random() - 0.5) * 100;
     collectibles.push({
@@ -934,7 +947,7 @@ function spawnPipe() {
       type: 'coin', collected: false, rot: 0, t: 3,
     });
   } else {
-    // Single coin (common)
+    // Single coin (rare now)
     collectibles.push({
       x: baseX + (Math.random() - 0.5) * 40,
       y: gapY + (Math.random() - 0.5) * 100,

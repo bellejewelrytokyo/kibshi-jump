@@ -1272,10 +1272,10 @@ function determineWinner() {
     
     // Round score: base + level bonus + speed bonus
     const baseScore = 10;
-    const levelBonus = (botLevel - 1) * 2;
+    const levelBonus = (botLevel - 1) * 4;
     let speedBonus = 0;
-    if (playerTime < 200) speedBonus = 10;
-    else if (playerTime < 300) speedBonus = 5;
+    if (playerTime < 200) speedBonus = 6;
+    else if (playerTime < 300) speedBonus = 3;
     const roundScore = baseScore + levelBonus + speedBonus;
     matchScore += roundScore;
     lastRoundScore = roundScore;
@@ -1338,7 +1338,7 @@ async function matchOver() {
   const foughtRankName = getBanditRank();
   
   if (isWin) {
-    const matchWinBonus = 5 + (botLevel - 1) * 2;
+    const matchWinBonus = 5 + (botLevel - 1) * 4;
     let bonus = matchWinBonus;
     if (botWins === 0) {
       bonus += 5; // sweep
@@ -1375,7 +1375,7 @@ async function matchOver() {
     let extras = '';
     if (isWin) {
       // Use the bot level we ACTUALLY fought (before any level-up from this win)
-      const levelBonusTotal = (foughtBotLevel - 1) * 6;  // (Lv-1)*2 * 2 rounds + (Lv-1)*2 match win
+      const levelBonusTotal = (foughtBotLevel - 1) * 12;  // (Lv-1)*4 * 2 rounds + (Lv-1)*4 match win
       if (levelBonusTotal > 0) {
         extras = `<br><span style="color:#FFB6E5; font-size:12px;">vs Lv ${foughtBotLevel} ${foughtRankName} → +${levelBonusTotal} bonus</span>`;
       }
