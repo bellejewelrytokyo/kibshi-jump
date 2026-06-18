@@ -890,21 +890,21 @@ function drawRobotVillain(x, y) {
   ctx.fillRect(hat_cx - s * 0.012, hat_cy + s * 0.020, s * 0.004, s * 0.013);
   ctx.fillRect(hat_cx + s * 0.008, hat_cy + s * 0.020, s * 0.004, s * 0.013);
 
-  // Arm
+  // Arm (raised to match hero gun height)
   ctx.fillStyle = p.body;
-  roundedRectPath(ctx, -s * 0.62, s * 0.5, s * 0.16, s * 0.4, s * 0.05);
+  roundedRectPath(ctx, -s * 0.62, s * 0.3, s * 0.16, s * 0.4, s * 0.05);
   ctx.fill();
   ctx.fillStyle = p.bolts;
   ctx.beginPath();
-  ctx.arc(-s * 0.54, s * 0.5, s * 0.1, 0, Math.PI * 2);
+  ctx.arc(-s * 0.54, s * 0.3, s * 0.1, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = p.neck;
   ctx.beginPath();
-  ctx.arc(-s * 0.54, s * 0.5, s * 0.05, 0, Math.PI * 2);
+  ctx.arc(-s * 0.54, s * 0.3, s * 0.05, 0, Math.PI * 2);
   ctx.fill();
 
-  // Laser gun - tier-colored
-  drawLaserGun(-s * 0.5, s * 0.7, -1, p.hatBand, p.eyeGlow);
+  // Laser gun - tier-colored (raised to match hero)
+  drawLaserGun(-s * 0.5, s * 0.5, -1, p.hatBand, p.eyeGlow);
 
   ctx.restore();
 }
@@ -1203,8 +1203,8 @@ function handleFalseStart() {
   // Villain shoots while hero is still fumbling
   setTimeout(() => {
     if (state === STATE.RESULT) {
-      laserBeam = { fromX: BOT_X - 25, fromY: BOT_Y + 25, toX: HERO_X, toY: HERO_Y + 10, life: 25, maxLife: 25, color: '#FF1493' };
-      spawnHitParticles(HERO_X, HERO_Y, '#FF1493');
+      laserBeam = { fromX: BOT_X - 45, fromY: BOT_Y + 23, toX: HERO_X, toY: BOT_Y + 23, life: 25, maxLife: 25, color: '#FF1493' };
+      spawnHitParticles(HERO_X, BOT_Y + 23, '#FF1493');
       shakeAmount = 10;
       sfxLaser(false);
     }
@@ -1247,8 +1247,8 @@ function determineWinner() {
     // Hero shoots villain
     setTimeout(() => {
       if (state === STATE.RESULT) {
-        laserBeam = { fromX: HERO_X + 25, fromY: HERO_Y + 25, toX: BOT_X, toY: BOT_Y + 10, life: 25, maxLife: 25, color: '#FFD700' };
-        spawnHitParticles(BOT_X, BOT_Y, '#FFD700');
+        laserBeam = { fromX: HERO_X + 45, fromY: HERO_Y + 23, toX: BOT_X, toY: HERO_Y + 23, life: 25, maxLife: 25, color: '#FFD700' };
+        spawnHitParticles(BOT_X, HERO_Y + 23, '#FFD700');
         shakeAmount = 8;
         sfxLaser(true);
       }
@@ -1265,8 +1265,8 @@ function determineWinner() {
     // Villain shoots hero
     setTimeout(() => {
       if (state === STATE.RESULT) {
-        laserBeam = { fromX: BOT_X - 25, fromY: BOT_Y + 25, toX: HERO_X, toY: HERO_Y + 10, life: 25, maxLife: 25, color: '#FF1493' };
-        spawnHitParticles(HERO_X, HERO_Y, '#FF1493');
+        laserBeam = { fromX: BOT_X - 45, fromY: BOT_Y + 23, toX: HERO_X, toY: BOT_Y + 23, life: 25, maxLife: 25, color: '#FF1493' };
+        spawnHitParticles(HERO_X, BOT_Y + 23, '#FF1493');
         shakeAmount = 8;
         sfxLaser(false);
       }
