@@ -1270,10 +1270,10 @@ function determineWinner() {
     lastRoundResult = 'win';
     if (lastReactionTime < bestReactionTime) bestReactionTime = lastReactionTime;
     
-    // Round score: small base + small level bonus + small speed bonus
-    // (Main level reward is on match win to discourage farming losses)
+    // Round score: small base + speed bonus only (no per-round Lv bonus)
+    // (Level reward concentrated on match win to keep round score consistent)
     const baseScore = 4;
-    const levelBonus = (botLevel - 1) * 1;
+    const levelBonus = 0;
     let speedBonus = 0;
     if (playerTime < 200) speedBonus = 4;
     else if (playerTime < 300) speedBonus = 2;
@@ -1339,7 +1339,7 @@ async function matchOver() {
   const foughtRankName = getBanditRank();
   
   if (isWin) {
-    const matchWinBonus = 5 + Math.floor((botLevel - 1) ** 2 * 1.5);
+    const matchWinBonus = 5 + Math.floor((botLevel - 1) ** 2 * 0.5);
     let bonus = matchWinBonus;
     if (botWins === 0) {
       bonus += 5; // sweep
@@ -1376,7 +1376,7 @@ async function matchOver() {
     let extras = '';
     if (isWin) {
       // Use the bot level we ACTUALLY fought (before any level-up from this win)
-      const levelBonusTotal = (foughtBotLevel - 1) * 2 + Math.floor((foughtBotLevel - 1) ** 2 * 1.5);  // (Lv-1)*1 * 2 rounds + quadratic match Lv
+      const levelBonusTotal = Math.floor((foughtBotLevel - 1) ** 2 * 0.5);  // Match Lv only (quadratic), no per-round Lv
       if (levelBonusTotal > 0) {
         extras = `<br><span style="color:#FFB6E5; font-size:12px;">vs Lv ${foughtBotLevel} ${foughtRankName} → +${levelBonusTotal} bonus</span>`;
       }
