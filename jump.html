@@ -493,15 +493,15 @@ function drawShibaImage(x, y, rotation, scale = 1) {
   ctx.fill();
 
   // --- Body (drawn before head so head overlaps on top) ---
-  // Tail (small curl on back-left side since dog faces right)
+  // Tail (curled shiba-style, left side)
   ctx.fillStyle = '#D89A5F';
   ctx.beginPath();
-  ctx.arc(-s * 0.78, s * 0.95, s * 0.24, 0, Math.PI * 2);
+  ctx.arc(-s * 0.80, s * 1.25, s * 0.24, 0, Math.PI * 2);
   ctx.fill();
   // Tail tip lighter
   ctx.fillStyle = '#F0C99A';
   ctx.beginPath();
-  ctx.arc(-s * 0.85, s * 0.88, s * 0.1, 0, Math.PI * 2);
+  ctx.arc(-s * 0.87, s * 1.17, s * 0.11, 0, Math.PI * 2);
   ctx.fill();
 
   // Main body (rounded tan shape)
@@ -883,21 +883,55 @@ function spawnPipe() {
   pipes.push({ x: W, gapY, passed: false });
   // Maybe spawn a collectible between this pipe and the next one
   const roll = Math.random();
-  if (roll < 0.15) {
+  const baseX = W + PIPE_SPACING / 2;
+  if (roll < 0.08) {
     // Bone (rare, worth +3)
     collectibles.push({
-      x: W + PIPE_SPACING / 2 + (Math.random() - 0.5) * 40,
+      x: baseX + (Math.random() - 0.5) * 40,
       y: gapY + (Math.random() - 0.5) * 80,
       type: 'bone', collected: false, rot: Math.random() * Math.PI, t: 0,
     });
-  } else if (roll < 0.85) {
-    // Coin (common, worth +1)
+  } else if (roll < 0.12) {
+    // Bone PAIR (super rare, worth +6 total!)
+    const centerY = gapY + (Math.random() - 0.5) * 80;
     collectibles.push({
-      x: W + PIPE_SPACING / 2 + (Math.random() - 0.5) * 40,
+      x: baseX - 22, y: centerY - 8,
+      type: 'bone', collected: false, rot: Math.random() * Math.PI, t: 0,
+    });
+    collectibles.push({
+      x: baseX + 22, y: centerY + 8,
+      type: 'bone', collected: false, rot: Math.random() * Math.PI, t: 2,
+    });
+  } else if (roll < 0.30) {
+    // Coin TRIO (vertical row of 3 coins - juicy reward!)
+    const centerY = gapY + (Math.random() - 0.5) * 60;
+    const triX = baseX + (Math.random() - 0.5) * 30;
+    for (let i = -1; i <= 1; i++) {
+      collectibles.push({
+        x: triX, y: centerY + i * 36,
+        type: 'coin', collected: false, rot: 0, t: i * 4,
+      });
+    }
+  } else if (roll < 0.55) {
+    // Coin PAIR (2 coins horizontally)
+    const centerY = gapY + (Math.random() - 0.5) * 100;
+    collectibles.push({
+      x: baseX - 25, y: centerY,
+      type: 'coin', collected: false, rot: 0, t: 0,
+    });
+    collectibles.push({
+      x: baseX + 25, y: centerY,
+      type: 'coin', collected: false, rot: 0, t: 3,
+    });
+  } else if (roll < 0.95) {
+    // Single coin (common)
+    collectibles.push({
+      x: baseX + (Math.random() - 0.5) * 40,
       y: gapY + (Math.random() - 0.5) * 100,
       type: 'coin', collected: false, rot: 0, t: 0,
     });
   }
+  // else: 5% nothing
 }
 
 function updatePipes() {
