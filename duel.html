@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>$KIBSHI DUEL</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="api.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -364,6 +365,7 @@ let botLevel = 1;
 let totalPoints = 0;
 let bestMatchScore = 0;
 let lastRoundResult = ''; // 'win' / 'lose' / 'foul'
+let matchStartTime = 0;  // [SYNC] Tracks match duration for API submission
 
 // Round timing
 let fireTime = 0;
@@ -423,6 +425,35 @@ async function saveProgress() {
     await storage.set('kibshi_total_points', String(totalPoints));
     await storage.set('kibshi_duel_best_score', String(bestMatchScore));
   } catch (e) {}
+}
+
+// ---------- Server submission [SYNC] ----------
+// Called once per match (in matchOver), sending the match's final score.
+// Reaction time, win streak, and total wins stay LOCAL-ONLY (gameplay
+// flavor data, not score-relevant). Server is source of truth for the
+// match score and reward totals; we reconcile after a successful POST.
+async function submitScoreToServer(finalMatchScore, durationMs) {
+  if (finalMatchScore <= 0) return;
+  if (typeof api === 'undefined') return;
+
+  const r = await api.submitScore('duel', finalMatchScore, Math.round(durationMs));
+  if (!r.ok) return;  // Silent fallback — localStorage already updated
+
+  const me = await api.me();
+  if (!me.ok) return;
+
+  const serverTotal = me.data.total_points.all;
+  const serverDuelBest = me.data.personal_bests.duel;
+
+  totalPoints = serverTotal;
+  bestMatchScore = serverDuelBest;
+
+  try {
+    localStorage.setItem('kibshi_total_points', String(serverTotal));
+    localStorage.setItem('kibshi_duel_best_score', String(serverDuelBest));
+  } catch (e) {}
+
+  updateTotalDisplay();
 }
 
 function updateTotalDisplay() {
@@ -1164,6 +1195,7 @@ function getBotReactionTime() {
 
 function startMatch() {
   state = STATE.ROUND_INTRO;
+  matchStartTime = performance.now();  // [SYNC] Track for duration_ms
   round = 1;
   playerWins = 0;
   botWins = 0;
@@ -1363,6 +1395,11 @@ async function matchOver() {
   totalPoints += matchScore;
   await saveProgress();
   updateTotalDisplay();
+
+  // [SYNC] Send match score to server (fire-and-forget; failures fall
+  // back to localStorage so UX stays smooth)
+  const matchDurationMs = performance.now() - matchStartTime;
+  submitScoreToServer(matchScore, matchDurationMs);
   
   // Update UI
   const titleEl = document.getElementById('gameOverTitle');
