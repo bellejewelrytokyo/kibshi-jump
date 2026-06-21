@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>$KIBSHI Mini Games</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="api.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -201,6 +202,131 @@
     color: #999;
   }
   .reward-status.unlocked { color: #D8527A; }
+  /* ---------- Leaderboard ---------- */
+  .leaderboard-section {
+    width: 100%;
+    margin-top: 28px;
+    margin-bottom: 8px;
+  }
+  .lb-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .lb-tab {
+    flex: 1;
+    padding: 10px 4px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.6);
+    color: #5a3a2a;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.1s;
+    font-family: inherit;
+    letter-spacing: 0.05em;
+  }
+  .lb-tab:active { transform: scale(0.96); }
+  .lb-tab.active {
+    background: linear-gradient(135deg, #E8A87C, #D8527A);
+    color: white;
+    box-shadow: 0 4px 12px rgba(216, 82, 122, 0.3);
+  }
+  .lb-list {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    padding: 8px 12px;
+    min-height: 80px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  }
+  .lb-status {
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+    padding: 20px 8px;
+  }
+  .lb-entry {
+    display: flex;
+    align-items: center;
+    padding: 10px 4px;
+    border-bottom: 1px solid rgba(216, 82, 122, 0.08);
+    gap: 10px;
+  }
+  .lb-entry:last-child { border-bottom: none; }
+  .lb-entry.me {
+    background: rgba(216, 82, 122, 0.08);
+    border-radius: 10px;
+    padding: 10px 8px;
+    border-bottom: none;
+    margin: 2px 0;
+  }
+  .lb-rank {
+    width: 32px;
+    text-align: center;
+    font-weight: 800;
+    color: #D8527A;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .lb-rank.medal { font-size: 18px; }
+  .lb-name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 700;
+    color: #5a3a2a;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lb-name .you-tag {
+    font-size: 10px;
+    background: #D8527A;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+    font-weight: 700;
+  }
+  .lb-points {
+    font-weight: 800;
+    color: #D8527A;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .lb-me-card {
+    margin-top: 12px;
+    background: linear-gradient(135deg, #FFE5EC 0%, #FFC8DD 100%);
+    border-radius: 16px;
+    padding: 14px 18px;
+    border: 2px solid rgba(216, 82, 122, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .lb-me-card[hidden] { display: none; }
+  .lb-me-label {
+    font-size: 11px;
+    color: #5a3a2a;
+    opacity: 0.7;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .lb-me-rank {
+    font-size: 22px;
+    font-weight: 900;
+    color: #D8527A;
+    line-height: 1;
+    margin-top: 2px;
+  }
+  .lb-me-points {
+    font-weight: 700;
+    color: #5a3a2a;
+    font-size: 14px;
+  }
 </style>
 </head>
 <body>
@@ -241,6 +367,25 @@
         <div class="game-best">Best: <span id="duelBest">0</span></div>
       </div>
     </a>
+  </div>
+
+  <div class="leaderboard-section">
+    <div class="games-section-label">🏆 Leaderboard</div>
+    <div class="lb-tabs">
+      <button class="lb-tab active" data-period="all">All Time</button>
+      <button class="lb-tab" data-period="week">Weekly</button>
+      <button class="lb-tab" data-period="month">Monthly</button>
+    </div>
+    <div class="lb-list" id="lbList">
+      <div class="lb-status" id="lbStatus">Loading...</div>
+    </div>
+    <div class="lb-me-card" id="lbMeCard" hidden>
+      <div>
+        <div class="lb-me-label">Your Rank</div>
+        <div class="lb-me-rank" id="lbMeRank">—</div>
+      </div>
+      <div class="lb-me-points" id="lbMePoints">0 pts</div>
+    </div>
   </div>
 
   <div class="rewards-section">
@@ -317,20 +462,25 @@ const storage = {
   }
 };
 
-async function loadStats() {
-  const total = parseInt(await storage.get('kibshi_total_points') || '0') || 0;
-  const jumpBest = parseInt(await storage.get('kibshi_jump_best') || '0') || 0;
-  const catchBest = parseInt(await storage.get('kibshi_catch_best') || '0') || 0;
-  const duelBest = parseInt(await storage.get('kibshi_duel_best_score') || '0') || 0;
+// ============================================================
+// Render: stats (Total + per-game PB + reward milestones)
+// ============================================================
 
-  // Animate the total value counting up
+let lastRenderedTotal = 0;
+
+function renderStats({ total, jumpBest, catchBest, duelBest }) {
+  // Animate the total value from previous render to new value
   const el = document.getElementById('totalValue');
+  const startVal = lastRenderedTotal;
+  const targetVal = total;
+  lastRenderedTotal = total;
   const duration = 800;
   const startTime = performance.now();
   function animate(now) {
     const t = Math.min(1, (now - startTime) / duration);
     const eased = 1 - Math.pow(1 - t, 3);
-    el.textContent = Math.floor(total * eased).toLocaleString();
+    const val = Math.floor(startVal + (targetVal - startVal) * eased);
+    el.textContent = val.toLocaleString();
     if (t < 1) requestAnimationFrame(animate);
   }
   requestAnimationFrame(animate);
@@ -354,12 +504,150 @@ async function loadStats() {
       status.classList.add('unlocked');
       status.textContent = '✓ UNLOCKED';
     } else {
+      tile.classList.remove('unlocked');
+      status.classList.remove('unlocked');
       status.textContent = `${total.toLocaleString()} / ${tier.req.toLocaleString()}`;
     }
   }
 }
 
+// ============================================================
+// Load stats: localStorage cache first (instant), then API overwrite
+// ============================================================
+
+async function loadStats() {
+  // 1. localStorage キャッシュで即時表示
+  const cached = {
+    total:     parseInt(await storage.get('kibshi_total_points')   || '0') || 0,
+    jumpBest:  parseInt(await storage.get('kibshi_jump_best')      || '0') || 0,
+    catchBest: parseInt(await storage.get('kibshi_catch_best')     || '0') || 0,
+    duelBest:  parseInt(await storage.get('kibshi_duel_best_score')|| '0') || 0,
+  };
+  renderStats(cached);
+
+  // 2. サーバーから本物の値を取得（成功時は上書き）
+  const r = await api.me();
+  if (r.ok) {
+    const server = {
+      total:     r.data.total_points.all,
+      jumpBest:  r.data.personal_bests.jump,
+      catchBest: r.data.personal_bests.catch,
+      duelBest:  r.data.personal_bests.duel,
+    };
+    renderStats(server);
+    // localStorage に書き戻し（次回起動時のキャッシュ用）
+    try {
+      localStorage.setItem('kibshi_total_points',    String(server.total));
+      localStorage.setItem('kibshi_jump_best',       String(server.jumpBest));
+      localStorage.setItem('kibshi_catch_best',      String(server.catchBest));
+      localStorage.setItem('kibshi_duel_best_score', String(server.duelBest));
+    } catch (e) {}
+  }
+  // 失敗時は cached のままで継続（サイレント fallback）
+}
+
+// ============================================================
+// Leaderboard
+// ============================================================
+
+const LB_CACHE_KEY = 'kibshi_lb_cache_';
+const myTgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function renderLeaderboard(data) {
+  const list = document.getElementById('lbList');
+  const meCard = document.getElementById('lbMeCard');
+
+  if (!data || !data.top || data.top.length === 0) {
+    list.innerHTML = '<div class="lb-status">No scores yet. Be the first! 🐕</div>';
+    meCard.hidden = true;
+    return;
+  }
+
+  const top10 = data.top.slice(0, 10);
+  list.innerHTML = top10.map(entry => {
+    const isMe = entry.telegram_id === myTgId;
+    const medal = entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`;
+    const isMedal = entry.rank <= 3;
+    const name = entry.first_name || entry.username || 'Anonymous';
+    return `
+      <div class="lb-entry${isMe ? ' me' : ''}">
+        <div class="lb-rank${isMedal ? ' medal' : ''}">${medal}</div>
+        <div class="lb-name">${escapeHtml(name)}${isMe ? '<span class="you-tag">YOU</span>' : ''}</div>
+        <div class="lb-points">${entry.total_points.toLocaleString()}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Show "Your Rank" card if user is NOT in top 10
+  const inTop10 = top10.some(e => e.telegram_id === myTgId);
+  if (!inTop10 && data.me) {
+    document.getElementById('lbMeRank').textContent = data.me.rank ? `#${data.me.rank}` : 'Unranked';
+    document.getElementById('lbMePoints').textContent = `${(data.me.total_points || 0).toLocaleString()} pts`;
+    meCard.hidden = false;
+  } else {
+    meCard.hidden = true;
+  }
+}
+
+async function loadLeaderboard(period) {
+  const list = document.getElementById('lbList');
+  const meCard = document.getElementById('lbMeCard');
+
+  // Try cache first for instant display
+  let hasCache = false;
+  try {
+    const raw = localStorage.getItem(LB_CACHE_KEY + period);
+    if (raw) {
+      renderLeaderboard(JSON.parse(raw));
+      hasCache = true;
+    }
+  } catch (e) {}
+
+  if (!hasCache) {
+    list.innerHTML = '<div class="lb-status">Loading...</div>';
+    meCard.hidden = true;
+  }
+
+  const r = await api.leaderboard(period);
+  if (r.ok) {
+    renderLeaderboard(r.data);
+    try {
+      localStorage.setItem(LB_CACHE_KEY + period, JSON.stringify(r.data));
+    } catch (e) {}
+  } else if (!hasCache) {
+    const msg = r.error === 'no_init_data'
+      ? 'Open in Telegram to see the leaderboard 🐕'
+      : 'Could not load leaderboard. Try again later.';
+    list.innerHTML = `<div class="lb-status">${msg}</div>`;
+    meCard.hidden = true;
+  }
+  // If we had cache and API failed: keep showing cached results silently
+}
+
+// ============================================================
+// Tab switching
+// ============================================================
+
+document.querySelectorAll('.lb-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    loadLeaderboard(tab.dataset.period);
+  });
+});
+
+// ============================================================
+// Boot
+// ============================================================
+
 loadStats();
+loadLeaderboard('all');
 </script>
 </body>
 </html>
