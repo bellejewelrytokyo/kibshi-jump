@@ -621,10 +621,16 @@ async function loadLeaderboard(period) {
       localStorage.setItem(LB_CACHE_KEY + period, JSON.stringify(r.data));
     } catch (e) {}
   } else if (!hasCache) {
-    const msg = r.error === 'no_init_data'
-      ? 'Open in Telegram to see the leaderboard 🐕'
-      : 'Could not load leaderboard. Try again later.';
-    list.innerHTML = `<div class="lb-status">${msg}</div>`;
+    let msg;
+    if (r.error === 'no_init_data') {
+      msg = 'Open in Telegram to see the leaderboard 🐕';
+    } else {
+      // Show specific error to help diagnose (timeout, http_500, network, etc.)
+      msg = `Could not load: ${r.error}`;
+      if (r.errorMessage) msg += ` (${r.errorMessage})`;
+      if (r.data && r.data.error) msg += ` [${r.data.error}]`;
+    }
+    list.innerHTML = `<div class="lb-status">${escapeHtml(msg)}</div>`;
     meCard.hidden = true;
   }
   // If we had cache and API failed: keep showing cached results silently
