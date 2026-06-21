@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>$KIBSHI JUMP</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="api.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -431,6 +432,7 @@ let score = 0;
 let bestScore = 0;
 let totalPoints = 0;
 let frameCount = 0;
+let gameStartTime = 0;  // [SYNC] Tracks game duration for API submission
 let groundOffset = 0;
 let pipeSpawnDelay = 0;
 let collectibles = [];
@@ -473,9 +475,40 @@ function updateTotalDisplay() {
 async function saveBestScore() {
   try {
     await storage.set('kibshi_jump_best', String(bestScore));
-    // [SYNC] When integrating with backend, also POST score to API here:
-    // await fetch('/api/scores', { method:'POST', body: JSON.stringify({score: bestScore, user: tgUser?.id}) });
   } catch (e) {}
+}
+
+// ---------- Server submission [SYNC] ----------
+// Called once per game (in gameOver), NOT per pipe. The server is the
+// source of truth; on success we re-fetch /me to overwrite localStorage
+// with authoritative values. On failure we silently keep localStorage,
+// preserving the player's UX. Next visit to index.html will reconcile.
+async function submitScoreToServer(finalScore, durationMs) {
+  if (finalScore <= 0) return;
+  if (typeof api === 'undefined') return;  // api.js failed to load
+
+  const r = await api.submitScore('jump', finalScore, Math.round(durationMs));
+  if (!r.ok) return;  // Silent fallback — localStorage already updated
+
+  // Re-fetch authoritative totals/PB from server and reconcile UI
+  const me = await api.me();
+  if (!me.ok) return;
+
+  const serverTotal = me.data.total_points.all;
+  const serverJumpBest = me.data.personal_bests.jump;
+
+  totalPoints = serverTotal;
+  bestScore = serverJumpBest;
+
+  try {
+    localStorage.setItem('kibshi_total_points', String(serverTotal));
+    localStorage.setItem('kibshi_jump_best', String(serverJumpBest));
+  } catch (e) {}
+
+  // Update on-screen displays
+  updateTotalDisplay();
+  const bestEl = document.getElementById('bestScore');
+  if (bestEl) bestEl.textContent = bestScore;
 }
 
 // ---------- Drawing: Shiba (KIBSHI) ----------
@@ -1099,6 +1132,7 @@ function checkCollision() {
 // ---------- Game flow ----------
 function startGame() {
   state = STATE.PLAYING;
+  gameStartTime = performance.now();  // [SYNC] Track for duration_ms
   player.y = H / 2;
   player.vy = 0;
   player.rotation = 0;
@@ -1136,13 +1170,15 @@ function gameOver() {
   saveTotalPoints();
   updateTotalDisplay();
 
+  // [SYNC] Send score to server (fire-and-forget; failures fall back to
+  // localStorage). Computed BEFORE the overlay shows so the round-trip
+  // overlaps the user's reaction time.
+  const durationMs = performance.now() - gameStartTime;
+  submitScoreToServer(score, durationMs);
+
   setTimeout(() => {
     document.getElementById('gameOverOverlay').classList.add('visible');
   }, 600);
-
-  // [TMA] When integrating Telegram, also call:
-  // Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-  // Telegram.WebApp.sendData(JSON.stringify({score, best: bestScore}));
 }
 
 function flap() {
