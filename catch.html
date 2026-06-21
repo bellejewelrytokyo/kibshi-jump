@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>$KIBSHI CATCH</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="api.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -381,6 +382,7 @@ let score = 0;
 let bestScore = 0;
 let totalPoints = 0;
 let lives = 3;
+let gameStartTime = 0;  // [SYNC] Tracks game duration for API submission
 let frameCount = 0;
 let spawnTimer = 0;
 let difficulty = 1.0;
@@ -409,6 +411,37 @@ async function saveBestScore() {
 
 async function saveTotalPoints() {
   try { await storage.set('kibshi_total_points', String(totalPoints)); } catch (e) {}
+}
+
+// ---------- Server submission [SYNC] ----------
+// Called once per game (in gameOver), NOT per item. Server is source of
+// truth; on success we re-fetch /me to overwrite localStorage with
+// authoritative values. On failure we silently keep localStorage so UX
+// stays intact, and the next index.html visit will reconcile.
+async function submitScoreToServer(finalScore, durationMs) {
+  if (finalScore <= 0) return;
+  if (typeof api === 'undefined') return;
+
+  const r = await api.submitScore('catch', finalScore, Math.round(durationMs));
+  if (!r.ok) return;  // Silent fallback
+
+  const me = await api.me();
+  if (!me.ok) return;
+
+  const serverTotal = me.data.total_points.all;
+  const serverCatchBest = me.data.personal_bests.catch;
+
+  totalPoints = serverTotal;
+  bestScore = serverCatchBest;
+
+  try {
+    localStorage.setItem('kibshi_total_points', String(serverTotal));
+    localStorage.setItem('kibshi_catch_best', String(serverCatchBest));
+  } catch (e) {}
+
+  updateTotalDisplay();
+  const bestEl = document.getElementById('bestScore');
+  if (bestEl) bestEl.textContent = bestScore;
 }
 
 function updateTotalDisplay() {
@@ -824,6 +857,7 @@ function handleCatch(item) {
 // ---------- Game flow ----------
 function startGame() {
   state = STATE.PLAYING;
+  gameStartTime = performance.now();  // [SYNC] Track for duration_ms
   items = [];
   particles = [];
   floaters = [];
@@ -859,6 +893,11 @@ async function gameOver() {
   }
   await saveTotalPoints();
   updateTotalDisplay();
+
+  // [SYNC] Send to server (fire-and-forget; failures fall back to localStorage)
+  const durationMs = performance.now() - gameStartTime;
+  submitScoreToServer(score, durationMs);
+
   setTimeout(() => document.getElementById('gameOverOverlay').classList.add('visible'), 500);
 }
 
